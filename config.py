@@ -12,18 +12,21 @@ USER_DETAILS_LIST = [
         "last_name": "Patel",
         "email": "pankaj.patel1@santander.co.uk",
         "vehicle_reg": "P4ANX",
+        "Book": "Y"
     },
     {
         "first_name": "Johnny",
         "last_name": "Agbotui",
         "email": "johnny.agbotuijnr@santander.co.uk",
         "vehicle_reg": "ET67OMZ",
+        "Book": "Y"
     },
-        {
+    {
         "first_name": "Prakash",
         "last_name": "Parth",
         "email": "prakash.parth@santander.co.uk",
         "vehicle_reg": "PR13KAS",
+        "Book": "Y"
     }
 ]
 

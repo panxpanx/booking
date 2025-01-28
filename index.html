@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panx's Gift to Booking Parking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-container, .cronjob-container {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 500px;
+            background: #fff;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        form input, form select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        form button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        form button:hover {
+            background-color: #218838;
+        }
+
+        .user-list {
+            margin: 20px auto;
+            max-width: 800px;
+        }
+
+        .user {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .user span {
+            font-size: 14px;
+        }
+
+        .user strong {
+            font-size: 16px;
+            color: #000;
+        }
+
+        .user button {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+        }
+
+        .user button:hover {
+            background-color: #0056b3;
+        }
+
+        .cronjob-container p {
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+        }
+
+        .cronjob-container code {
+            display: block;
+            background: #f1f1f1;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Booking Parking</h1>
+    <h2>Current Users</h2>
+    <div class="user-list" id="userList"></div>
+
+    <h2>Users Updated Today</h2>
+    <div class="user-list" id="userListToday"></div>
+    <button onclick="loadUsersToday()">Load Today's Users</button>
+
+    <h2>Bookings Updated Today</h2>
+    <div class="user-list" id="bookingListToday"></div>
+    <button onclick="loadBookingsToday()">Load Today's Bookings</button>
+
+    <h2>Update User Details</h2>
+    <div class="form-container">
+        <form id="updateForm">
+            <label>First Name: <input type="text" id="first_name" required></label>
+            <label>Last Name: <input type="text" id="last_name" required></label>
+            <label>Email: <input type="email" id="email" required></label>
+            <label>Vehicle Reg: <input type="text" id="vehicle_reg" required></label>
+            <label>Book: 
+                <select id="book">
+                    <option value="Y">Y</option>
+                    <option value="N">N</option>
+                </select>
+            </label>
+            <button type="submit">Add/Update User</button>
+        </form>
+    </div>
+
+    <h2>Your Cron Job</h2>
+    <div class="cronjob-container">
+        <p>This cron job runs every weekday at 6:00 AM to manage your parking bookings:</p>
+        <code>
+            0 6 * * 0,1,2,3,4 /Users/admin/pip_install/my_venv/bin/python /Users/admin/pip_install/main.py >> /Users/admin/pip_install/output.log 2>> /Users/admin/pip_install/error.log
+        </code>
+    </div>
+
+    <script>
+        // Load all users
+        function loadUsers() {
+            fetch('/get_users')
+                .then(response => response.json())
+                .then(data => {
+                    const userList = document.getElementById('userList');
+                    userList.innerHTML = ''; // Clear list before rendering
+                    data.forEach((user, index) => {
+                        const userDiv = document.createElement('div');
+                        userDiv.className = 'user';
+                        userDiv.innerHTML = `
+                            <span><strong>${index + 1}. ${user.first_name} ${user.last_name}</strong> (${user.email}) - Vehicle: ${user.vehicle_reg}, Book: <strong>${user.Book}</strong></span>
+                            <button onclick="keepBooking('${user.email}')">Keep Booking for me</button>
+                        `;
+                        userList.appendChild(userDiv);
+                    });
+                })
+                .catch(error => console.error('Error fetching user details:', error));
+        }
+
+        // Load today's users
+        function loadUsersToday() {
+            fetch('/get_users_today')
+                .then(response => response.json())
+                .then(data => {
+                    const userListToday = document.getElementById('userListToday');
+                    userListToday.innerHTML = ''; // Clear list before rendering
+                    data.forEach((user, index) => {
+                        const userDiv = document.createElement('div');
+                        userDiv.className = 'user';
+                        userDiv.innerHTML = `
+                            <span><strong>${index + 1}. ${user.first_name} ${user.last_name}</strong> (${user.email}) - Vehicle: ${user.vehicle_reg}, Book: <strong>${user.Book}</strong></span>
+                        `;
+                        userListToday.appendChild(userDiv);
+                    });
+                })
+                .catch(error => console.error('Error fetching today\'s user details:', error));
+        }
+
+        // Load today's bookings
+        function loadBookingsToday() {
+            fetch('/get_bookings_today')
+                .then(response => response.json())
+                .then(data => {
+                    const bookingList = document.getElementById('bookingListToday');
+                    bookingList.innerHTML = ''; // Clear list before rendering
+                    data.forEach((booking, index) => {
+                        const bookingDiv = document.createElement('div');
+                        bookingDiv.className = 'user';
+                        bookingDiv.innerHTML = `
+                            <span><strong>${index + 1}. Reference:</strong> ${booking.reference}</span><br>
+                            <span><strong>Date:</strong> ${booking.date}</span><br>
+                            <span><strong>Booked For:</strong> ${booking.name || "N/A"}</span>
+                        `;
+                        bookingList.appendChild(bookingDiv);
+                    });
+                })
+                .catch(error => console.error('Error fetching today\'s bookings:', error));
+        }
+
+        // Keep booking for a user
+        function keepBooking(email) {
+            fetch('/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, Book: 'Y' }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    loadUsers(); // Reload users
+                })
+                .catch(error => console.error('Error keeping booking:', error));
+        }
+
+        // Handle form submission
+        document.getElementById('updateForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const userData = {
+                first_name: document.getElementById('first_name').value.trim(),
+                last_name: document.getElementById('last_name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                vehicle_reg: document.getElementById('vehicle_reg').value.trim(),
+                Book: document.getElementById('book').value,
+            };
+
+            fetch('/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    document.getElementById('updateForm').reset();
+                    loadUsers(); // Reload users
+                    loadUsersToday(); // Reload today's users
+                })
+                .catch(error => console.error('Error updating user details:', error));
+        });
+
+        // Initial load
+        loadUsers();
+    </script>
+</body>
+</html>
+

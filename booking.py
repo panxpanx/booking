@@ -3,7 +3,7 @@
 
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from selenium.webdriver.common.by import By
 from driver_utils import wait_for_element
 from config import current_datetime
@@ -27,6 +27,30 @@ logger = logging.getLogger(__name__)
 #    if entry_date < datetime.now().date():
 #        raise ValueError("Entry date must be today or later.")
 #
+
+
+def retry_parking_selection(driver):
+    """
+    Retry selecting the parking option for up to 30 minutes if sold out.
+    """
+    logger.info("Retrying Standard Parking selection for up to 30 minutes...")
+    end_time = datetime.now() + timedelta(minutes=30)
+    while datetime.now() < end_time:
+        # Check if parking is available
+        if not check_sold_out(driver):
+            logger.info("Standard Parking is now available!")
+            return True
+        
+        logger.info("Standard Parking still sold out. Going back and retrying...")
+        
+        # Go back to the previous page and reload
+        driver.back()
+        time.sleep(5)  # Allow page to load completely
+        driver.refresh()
+        time.sleep(10)  # Give time for elements to load before checking again
+    
+    logger.error("Standard Parking remained sold out after 30 minutes of retrying.")
+    return False
 
 def validate_booking_time():
     """
@@ -143,7 +167,7 @@ def fill_parking_details(driver, user_details):
         return False
 
     # Accept T&Cs and finalize the booking
-    if not accept_terms_and_finalize(driver):
+    if not accept_terms_and_finalize(driver,user_details):
         return False
 
     return True
@@ -194,12 +218,36 @@ def check_sold_out(driver):
     logger.info("Parking not sold out. Continuing...")
     return False
 
+def retry_parking_selection(driver):
+    """
+    Retry selecting the parking option for up to 30 minutes if sold out.
+    """
+    logger.info("Retrying Standard Parking selection for up to 30 minutes...")
+    end_time = datetime.now() + timedelta(minutes=30)
+    while datetime.now() < end_time:
+        # Check if parking is available
+        if not check_sold_out(driver):
+            logger.info("Standard Parking is now available!")
+            return True
+        
+        logger.info("Standard Parking still sold out. Going back and retrying...")
+        
+        # Go back to the previous page and reload
+        driver.back()
+        time.sleep(5)  # Allow page to load completely
+        driver.refresh()
+        time.sleep(10)  # Give time for elements to load before checking again
+    
+    logger.error("Standard Parking remained sold out after 30 minutes of retrying.")
+    return False
+
+
 
 def click_tap_permit_booking(driver):
     """
     Attempts to click on the TAP Permit 'Book Now' button.
     """
-    
+    """
 
     logger.info("Trying to select TAP Permit booking...")
     tap_button_selectors = [
@@ -222,8 +270,8 @@ def click_tap_permit_booking(driver):
             except Exception as e:
                 logger.warning(f"Could not click TAP Permit button with {sel_type}={sel_value}: {str(e)}")
     logger.error("Could not find TAP Permit 'Book Now' button.")
-    
-    logger.info("Panx - Sold out and didn book TAP")
+    """
+    logger.info("Sold out and didn book TAP")
     return False
 
 
@@ -232,23 +280,26 @@ def click_standard_parking(driver):
     Attempts to click on the Standard Parking 'Book Now' button, if it exists.
     """
     logger.info("Selecting Standard Parking (pid=413)...")
-    standard_parking_button = wait_for_element(
-        driver,
-        By.CSS_SELECTOR,
-        "a.btn.btn-primary.btn--submit.item__cta[data-step2-item='413']",
-        timeout=5,
-        clickable=True
-    )
-    if standard_parking_button:
-        try:
-            standard_parking_button.click()
-            logger.info("Clicked 'Standard Parking' book button.")
-            time.sleep(2)
-            return True
-        except Exception as e:
-            logger.error(f"Failed clicking Standard Parking button: {str(e)}")
+    if retry_parking_selection(driver):
+        standard_parking_button = wait_for_element(
+            driver,
+            By.CSS_SELECTOR,
+            "a.btn.btn-primary.btn--submit.item__cta[data-step2-item='413']",
+            timeout=5,
+            clickable=True
+        )
+        if standard_parking_button:
+            try:
+                standard_parking_button.click()
+                logger.info("Clicked 'Standard Parking' book button.")
+                time.sleep(2)
+                return True
+            except Exception as e:
+                logger.error(f"Failed clicking Standard Parking button: {str(e)}")
+        else:
+            logger.error("Standard Parking button not found.")
     else:
-        logger.error("Standard Parking button not found.")
+        logger.error("Could not select Standard Parking after retries.")
     return False
 
 
@@ -348,7 +399,7 @@ def process_booking(driver, booking_data, user_details):
         logger.error(f"Error during booking process: {e}")
         return False
 
-def accept_terms_and_finalize(driver):
+def accept_terms_and_finalize(driver, user_details):
     """
     Checks the terms and conditions box, then attempts to complete the booking.
     Looks for a confirmation or booking reference on success.
@@ -417,7 +468,7 @@ def accept_terms_and_finalize(driver):
                 EC.presence_of_element_located((By.XPATH, "//h1[contains(text(), 'Confirmation')]"))
             )
             # Extract booking reference
-            return extract_booking_reference(driver)
+            return extract_booking_reference(driver, user_details)
         except TimeoutException:
             logger.error("Booking confirmation not received (Timeout).")
             return False
@@ -426,7 +477,7 @@ def accept_terms_and_finalize(driver):
         return False
 
 
-def extract_booking_reference(driver):
+def extract_booking_reference(driver, user_details):
     """
     Searches for a booking reference in several possible places on the page.
     Returns True if found, else False.
@@ -451,13 +502,16 @@ def extract_booking_reference(driver):
         except:
             continue
 
+
+
     if booking_ref:
         logger.info(f"Booking confirmed! Reference number: {booking_ref}")
         # Save booking reference to file
         # with open("booking_reference.txt", "a") as f:
         with open("/Users/admin/pip_install/booking_reference.txt", "a") as f:
-            f.write(f"Booking Reference: {booking_ref}\n")
             f.write(f"Booking Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f" BOOKED FOR {user_details['first_name']}\n")
+            f.write(f"Booking Reference: {booking_ref}\n")
         logger.info("Booking reference saved to booking_reference.txt")
         return True
     else:
