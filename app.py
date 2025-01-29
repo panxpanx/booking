@@ -19,7 +19,7 @@ def load_user_details():
 def save_user_details(user_details_list):
     with open(CONFIG_FILE, 'r') as file:
         content = file.readlines()
-    
+
     start_index = next(i for i, line in enumerate(content) if line.strip().startswith("USER_DETAILS_LIST ="))
     end_index = start_index + 1
     while not content[end_index].strip() == ']':
@@ -31,7 +31,7 @@ def save_user_details(user_details_list):
 
     with open(CONFIG_FILE, 'w') as file:
         file.writelines(content)
-"""
+
 # Load today's bookings from the file
 def get_bookings_today():
     today = datetime.now().strftime('%Y-%m-%d')
@@ -43,54 +43,20 @@ def get_bookings_today():
     for line in lines:
         line = line.strip()
         if line.startswith("Booking Reference:"):
-            if current_booking:
+            if current_booking and current_booking.get("date") == today:
                 bookings.append(current_booking)
                 current_booking = {}
             current_booking["reference"] = line.split(":")[1].strip()
         elif line.startswith("Booking Date:"):
             booking_date = line.split(":")[1].strip()
-            if today in booking_date:
-                current_booking["date"] = booking_date
+            current_booking["date"] = booking_date
         elif line.startswith("BOOKED FOR"):
             current_booking["name"] = line.split("BOOKED FOR")[1].strip()
-    
-    if current_booking:
-        bookings.append(current_booking)
 
-    return [booking for booking in bookings if "date" in booking and today in booking["date"]]
-"""
-
-def get_bookings_today():
-    today = datetime.now().strftime('%Y-%m-%d')
-    bookings = []
-    current_booking = {}
-
-    with open(BOOKING_FILE, 'r') as file:
-        lines = file.readlines()
-
-    for line in lines:
-        line = line.strip()
-        if line.startswith("Booking Date:"):
-            # Save the previous booking if all details are filled
-            if current_booking.get("reference"):
-                bookings.append(current_booking)
-                current_booking = {}
-            # Start a new booking entry
-            booking_date = line.split(":", 1)[1].strip()
-            if today in booking_date:
-                current_booking["date"] = booking_date
-        elif line.startswith("BOOKED FOR"):
-            current_booking["name"] = line.split("BOOKED FOR")[1].strip()
-        elif line.startswith("Booking Reference:"):
-            current_booking["reference"] = line.split(":", 1)[1].strip()
-
-    # Add the last booking if it was for today
-    if current_booking.get("reference"):
+    if current_booking and current_booking.get("date") == today:
         bookings.append(current_booking)
 
     return bookings
-
-
 
 @app.route('/')
 def index():
@@ -113,11 +79,35 @@ def get_bookings_today_endpoint():
     bookings_today = get_bookings_today()
     return jsonify(bookings_today)
 
+@app.route('/view_today_booking_file', methods=['GET'])
+def view_today_booking_file():
+    today = datetime.now().strftime('%Y-%m-%d')
+    filtered_entries = []
+
+    with open(BOOKING_FILE, 'r') as file:
+        lines = file.readlines()
+
+    entry = {}
+    for line in lines:
+        line = line.strip()
+        if line.startswith("BOOKED FOR"):
+            entry["name"] = line.split("BOOKED FOR")[1].strip()
+        elif line.startswith("Booking Reference:"):
+            entry["reference"] = line.split(":")[1].strip()
+        elif line.startswith("Booking Date:"):
+            date = line.split(":")[1].strip()
+            entry["date"] = date
+            if date.startswith(today):
+                filtered_entries.append(entry)
+                entry = {}
+
+    return jsonify({"content": filtered_entries})
+
 @app.route('/update', methods=['POST'])
 def update_user():
     data = request.json
     user_details = load_user_details()
-    
+
     for user in user_details:
         if user['email'] == data['email']:
             user['Book'] = data['Book']
@@ -126,7 +116,7 @@ def update_user():
     else:
         data['update_date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         user_details.append(data)
-    
+
     save_user_details(user_details)
     return jsonify({"message": "User details updated successfully!"})
 
