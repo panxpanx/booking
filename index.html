@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panx's Gift to Booking Parking</title>
+    <title>Book Parking Version 2</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -92,12 +92,23 @@
             border-radius: 5px;
             font-size: 14px;
             color: white;
-            background-color: #007bff;
             border: none;
         }
 
-        .user button:hover {
-            background-color: #0056b3;
+        .user .on {
+            background-color: #28a745;
+        }
+
+        .user .on:hover {
+            background-color: #218838;
+        }
+
+        .user .off {
+            background-color: #dc3545;
+        }
+
+        .user .off:hover {
+            background-color: #c82333;
         }
 
         .cronjob-container p {
@@ -118,7 +129,7 @@
     </style>
 </head>
 <body>
-    <h1>Booking Parking</h1>
+    <h1>Book Parking Version 2</h1>
     <h2>Current Users</h2>
     <div class="user-list" id="userList"></div>
 
@@ -129,6 +140,10 @@
     <h2>Bookings Updated Today</h2>
     <div class="user-list" id="bookingListToday"></div>
     <button onclick="loadBookingsToday()">Load Today's Bookings</button>
+
+    <h2>View Today's Booking File</h2>
+    <div class="user-list" id="bookingFileList"></div>
+    <button onclick="viewTodayBookingFile()">View Today's Booking File</button>
 
     <h2>Update User Details</h2>
     <div class="form-container">
@@ -156,7 +171,7 @@
     </div>
 
     <script>
-        // Load all users
+        // Load users and display them
         function loadUsers() {
             fetch('/get_users')
                 .then(response => response.json())
@@ -166,14 +181,35 @@
                     data.forEach((user, index) => {
                         const userDiv = document.createElement('div');
                         userDiv.className = 'user';
+                        const buttonClass = user.Book === 'Y' ? 'on' : 'off';
+                        const buttonText = user.Book === 'Y' ? 'Book ON' : 'Book OFF';
+
                         userDiv.innerHTML = `
                             <span><strong>${index + 1}. ${user.first_name} ${user.last_name}</strong> (${user.email}) - Vehicle: ${user.vehicle_reg}, Book: <strong>${user.Book}</strong></span>
-                            <button onclick="keepBooking('${user.email}')">Keep Booking for me</button>
+                            <button class="${buttonClass}" onclick="toggleBook('${user.email}', '${user.Book}')">${buttonText}</button>
                         `;
                         userList.appendChild(userDiv);
                     });
                 })
                 .catch(error => console.error('Error fetching user details:', error));
+        }
+
+        // Toggle Book flag
+        function toggleBook(email, currentBook) {
+            const newBook = currentBook === 'Y' ? 'N' : 'Y';
+            fetch('/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, Book: newBook }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    loadUsers(); // Reload users
+                })
+                .catch(error => console.error('Error toggling book:', error));
         }
 
         // Load today's users
@@ -216,21 +252,25 @@
                 .catch(error => console.error('Error fetching today\'s bookings:', error));
         }
 
-        // Keep booking for a user
-        function keepBooking(email) {
-            fetch('/update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, Book: 'Y' }),
-            })
+        // View today's booking file
+        function viewTodayBookingFile() {
+            fetch('/view_today_booking_file')
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.message);
-                    loadUsers(); // Reload users
+                    const bookingFileList = document.getElementById('bookingFileList');
+                    bookingFileList.innerHTML = ''; // Clear previous content
+                    data.content.forEach((entry, index) => {
+                        const entryDiv = document.createElement('div');
+                        entryDiv.className = 'user';
+                        entryDiv.innerHTML = `
+                            <span><strong>${index + 1}. Booked For:</strong> ${entry.name}</span><br>
+                            <span><strong>Reference:</strong> ${entry.reference}</span><br>
+                            <span><strong>Date:</strong> ${entry.date}</span>
+                        `;
+                        bookingFileList.appendChild(entryDiv);
+                    });
                 })
-                .catch(error => console.error('Error keeping booking:', error));
+                .catch(error => console.error('Error viewing today\'s booking file:', error));
         }
 
         // Handle form submission
@@ -256,7 +296,6 @@
                     alert(data.message);
                     document.getElementById('updateForm').reset();
                     loadUsers(); // Reload users
-                    loadUsersToday(); // Reload today's users
                 })
                 .catch(error => console.error('Error updating user details:', error));
         });
