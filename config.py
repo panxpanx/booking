@@ -13,7 +13,14 @@ USER_DETAILS_LIST = [
         "email": "pankaj.patel1@santander.co.uk",
         "vehicle_reg": "P4ANX",
         "Book": "Y",
-        "update_date": "2025-01-29 10:57:50"
+        "update_date": "2025-01-31 12:07:29",
+        "mon": "N",
+        "tue": "N",
+        "wed": "N",
+        "thu": "N",
+        "fri": "N",
+        "sat": "N",
+        "sun": "N"
     },
     {
         "first_name": "Johnny",
@@ -21,22 +28,44 @@ USER_DETAILS_LIST = [
         "email": "johnny.agbotuijnr@santander.co.uk",
         "vehicle_reg": "ET67OMZ",
         "Book": "Y",
-        "update_date": "2025-01-29 10:05:30"
+        "update_date": "2025-01-31 12:08:07",
+        "mon": "N",
+        "tue": "N",
+        "wed": "N",
+        "thu": "N",
+        "fri": "N",
+        "sat": "N",
+        "sun": "N"
     },
     {
         "first_name": "Prakash",
         "last_name": "Parth",
         "email": "prakash.parth@santander.co.uk",
         "vehicle_reg": "PR13KAS",
-        "Book": "Y"
+        "Book": "Y",
+        "mon": "N",
+        "tue": "N",
+        "wed": "N",
+        "thu": "N",
+        "fri": "N",
+        "sat": "N",
+        "sun": "N",
+        "update_date": "2025-01-31 12:08:29"
     },
     {
         "first_name": "Ayaan",
         "last_name": "Mercier",
         "email": "ayaan.mercier@santander.co.uk",
         "vehicle_reg": "WV60OMW",
-        "Book": "Y",
-        "update_date": "2025-01-28 20:50:28"
+        "Book": "N",
+        "update_date": "2025-01-31 12:08:24",
+        "mon": "N",
+        "tue": "N",
+        "wed": "N",
+        "thu": "N",
+        "fri": "N",
+        "sat": "N",
+        "sun": "N"
     }
 ]
 
