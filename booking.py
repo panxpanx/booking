@@ -1,33 +1,16 @@
 # booking.py
 
-
 import logging
 import time
 from datetime import datetime, timedelta
 from selenium.webdriver.common.by import By
 from driver_utils import wait_for_element
-from config import current_datetime
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from config import current_datetime, PARKING_DETAILS, USER_DETAILS
-
-
+from config import current_datetime, PARKING_DETAILS, USER_DETAILS_LIST
 
 logger = logging.getLogger(__name__)
-
-#
-#def validate_booking_time():
-#    """
-#    Validate that the booking meets time restrictions.
-#    For example, ensure entry date is in the future.
-#    """
-#    logger.info("Validating booking time...")
-#    entry_date = current_datetime.date()
-#    if entry_date < datetime.now().date():
-#        raise ValueError("Entry date must be today or later.")
-#
-
 
 def retry_parking_selection(driver):
     """
@@ -36,18 +19,15 @@ def retry_parking_selection(driver):
     logger.info("Retrying Standard Parking selection for up to 30 minutes...")
     end_time = datetime.now() + timedelta(minutes=30)
     while datetime.now() < end_time:
-        # Check if parking is available
         if not check_sold_out(driver):
             logger.info("Standard Parking is now available!")
             return True
         
         logger.info("Standard Parking still sold out. Going back and retrying...")
-        
-        # Go back to the previous page and reload
         driver.back()
-        time.sleep(5)  # Allow page to load completely
+        time.sleep(5)
         driver.refresh()
-        time.sleep(10)  # Give time for elements to load before checking again
+        time.sleep(10)
     
     logger.error("Standard Parking remained sold out after 30 minutes of retrying.")
     return False
@@ -67,20 +47,13 @@ def validate_booking_time():
 
     logger.info("Booking date validation passed.")
 
-
-
 def select_dates(driver, booking_data):
     """
     Select/Enter the entry and exit dates on the booking page.
-    booking_data typically has {entry_date, exit_date, entry_time, exit_time} in YYYY-MM-DD.
+    booking_data typically has {entry_date, exit_date, entry_time, exit_time} in YYYY-MM-DD format.
     """
     logger.info("Selecting booking dates from BOOKING_DETAILS...")
 
-    # Example usage: this might differ depending on the actual form fields
-    # This function is a simplified approach. If your site differs, adjust accordingly.
-    # booking_data => "entry_date": "2025-01-12", "exit_date": "2025-01-12", etc.
-
-    # Attempt to fill date fields (IDs may vary in real usage)
     entry_date_input = wait_for_element(driver, By.ID, "entryDate", timeout=5)
     if entry_date_input:
         entry_date_input.clear()
@@ -92,8 +65,6 @@ def select_dates(driver, booking_data):
         exit_date_input.clear()
         exit_date_input.send_keys(booking_data["exit_date"])
         logger.info(f"Entered exit date: {booking_data['exit_date']}")
-
-
 
 def fill_parking_details(driver, user_details):
     """
@@ -117,11 +88,14 @@ def fill_parking_details(driver, user_details):
 
     time.sleep(5)  # Wait for the form to finish loading
 
-    # Try to set entry/exit dates with JS (some sites might need this approach)
+    # Try to set entry/exit dates with JS (some sites need this approach)
     try:
         entry_date_element = wait_for_element(driver, By.ID, "changeEntryDate", timeout=5)
         if entry_date_element:
-            driver.execute_script(f"arguments[0].value = '{PARKING_DETAILS['entry_date']}'", entry_date_element)
+            driver.execute_script(
+                f"arguments[0].value = '{PARKING_DETAILS['entry_date']}'", 
+                entry_date_element
+            )
             driver.execute_script("arguments[0].dispatchEvent(new Event('change'))", entry_date_element)
             logger.info(f"Entry date set to {PARKING_DETAILS['entry_date']} via JS")
 
@@ -133,10 +107,12 @@ def fill_parking_details(driver, user_details):
             driver.execute_script("arguments[0].dispatchEvent(new Event('change'))", entry_time_element)
             logger.info("Entry time set to 06:00 via JS")
 
-
         exit_date_element = wait_for_element(driver, By.ID, "changeExitDate", timeout=5)
         if exit_date_element:
-            driver.execute_script(f"arguments[0].value = '{PARKING_DETAILS['exit_date']}'", exit_date_element)
+            driver.execute_script(
+                f"arguments[0].value = '{PARKING_DETAILS['exit_date']}'", 
+                exit_date_element
+            )
             driver.execute_script("arguments[0].dispatchEvent(new Event('change'))", exit_date_element)
             logger.info(f"Exit date set to {PARKING_DETAILS['exit_date']} via JS")
 
@@ -167,11 +143,10 @@ def fill_parking_details(driver, user_details):
         return False
 
     # Accept T&Cs and finalize the booking
-    if not accept_terms_and_finalize(driver,user_details):
+    if not accept_terms_and_finalize(driver, user_details):
         return False
 
     return True
-
 
 def click_book_now(driver):
     """
@@ -201,7 +176,6 @@ def click_book_now(driver):
     logger.error("Could not find any functioning 'Book Now' button.")
     return False
 
-
 def check_sold_out(driver):
     """
     Checks if the parking is sold out by looking for 'Sold Out' text.
@@ -218,37 +192,11 @@ def check_sold_out(driver):
     logger.info("Parking not sold out. Continuing...")
     return False
 
-def retry_parking_selection(driver):
-    """
-    Retry selecting the parking option for up to 30 minutes if sold out.
-    """
-    logger.info("Retrying Standard Parking selection for up to 30 minutes...")
-    end_time = datetime.now() + timedelta(minutes=30)
-    while datetime.now() < end_time:
-        # Check if parking is available
-        if not check_sold_out(driver):
-            logger.info("Standard Parking is now available!")
-            return True
-        
-        logger.info("Standard Parking still sold out. Going back and retrying...")
-        
-        # Go back to the previous page and reload
-        driver.back()
-        time.sleep(5)  # Allow page to load completely
-        driver.refresh()
-        time.sleep(10)  # Give time for elements to load before checking again
-    
-    logger.error("Standard Parking remained sold out after 30 minutes of retrying.")
-    return False
-
-
-
 def click_tap_permit_booking(driver):
     """
     Attempts to click on the TAP Permit 'Book Now' button.
     """
     """
-
     logger.info("Trying to select TAP Permit booking...")
     tap_button_selectors = [
         (By.CSS_SELECTOR, "a.btn.btn-primary.btn--submit.item__cta[data-step2-item='418']"),
@@ -273,7 +221,6 @@ def click_tap_permit_booking(driver):
     """
     logger.info("Sold out and didn book TAP")
     return False
-
 
 def click_standard_parking(driver):
     """
@@ -302,15 +249,13 @@ def click_standard_parking(driver):
         logger.error("Could not select Standard Parking after retries.")
     return False
 
-
 def fill_user_details(driver, user_details):
     """
     Fill in the user details on the form for each vehicle.
     """
     logger.info(f"Filling details for {user_details['vehicle_reg']}...")
 
-
-     # First Name
+    # First Name
     first_name_el = wait_for_element(driver, By.ID, "firstName", timeout=5)
     if first_name_el:
         first_name_el.clear()
@@ -347,7 +292,7 @@ def fill_user_details(driver, user_details):
             logger.info(f"Entered vehicle reg: {user_details['vehicle_reg']}")
             time.sleep(2)
 
-            # Verify
+            # Verify the text that was entered
             entered_text = vehicle_reg_el.get_attribute("value")
             if not entered_text or entered_text != user_details["vehicle_reg"]:
                 logger.error("Failed to confirm entered vehicle registration text.")
@@ -359,128 +304,85 @@ def fill_user_details(driver, user_details):
 
     return True
 
-    
-            
-
 def process_booking(driver, booking_data, user_details):
     """
     Process booking flow for a single vehicle.
+    Includes day-of-week toggles so booking occurs only if Book=Y and today's day is Y.
     """
+    # 7-day toggles: Monday=0 .. Sunday=6
+    weekday_index = datetime.now().weekday()
+    weekdays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+
+    # If Book='N', skip entirely
+    if user_details.get("Book") != "Y":
+        logger.info(f"Skipping {user_details['vehicle_reg']} because Book is 'N'.")
+        return False
+
+    # Check day-of-week toggle (mon-sun)
+    day_key = weekdays[weekday_index]  # e.g. "mon" if Monday
+    if user_details.get(day_key, "N") != "Y":
+        logger.info(f"Skipping {user_details['vehicle_reg']} because {day_key.upper()} toggle is not 'Y'.")
+        return False
+
     try:
-        # Select dates
+        # Validate booking time
+        validate_booking_time()
+
+        # Select dates (entry/exit)
         select_dates(driver, booking_data)
 
-
-
-      # Fill in the rest of the parking details
+        # Fill in the rest of the parking details (Book Now, user details, etc.)
         if not fill_parking_details(driver, user_details):
             raise Exception("Failed to fill parking details.")
 
-        logger.info("Completed fill_parking_details...'.")
+        logger.info("Completed fill_parking_details...")
 
-        """
-        # Fill user details
-        fill_user_details(driver, user_details)
-        """
-
-        # Accept terms and finalize booking
+        # Accept T&Cs and finalize booking
         terms = wait_for_element(driver, By.ID, "terms", timeout=5)
         if terms:
+            driver.execute_script("arguments[0].scrollIntoView(true);", terms)
+            time.sleep(1)
             terms.click()
-            logger.info("Accepted terms and conditions.")
+            logger.info("Clicked terms and conditions checkbox.")
+        else:
+            logger.error("Could not find terms checkbox.")
+            return False
 
-        book_button = wait_for_element(driver, By.ID, "PaymentFormSubmit", timeout=5)
+        book_button = wait_for_element(driver, By.ID, "PaymentFormSubmit", timeout=5, clickable=True)
         if book_button:
             book_button.click()
             logger.info("Clicked 'Book and Pay'.")
-        
-        return True
+        else:
+            logger.error("Could not find 'Book and Pay' button.")
+            return False
+
+        # Wait for confirmation page
+        try:
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, "//h1[contains(text(), 'Confirmation')]"))
+            )
+        except TimeoutException:
+            logger.error("Booking confirmation not received (Timeout).")
+            return False
+
+        # Attempt to extract booking reference
+        return extract_booking_reference(driver, user_details)
+
     except Exception as e:
         logger.error(f"Error during booking process: {e}")
         return False
 
 def accept_terms_and_finalize(driver, user_details):
     """
-    Checks the terms and conditions box, then attempts to complete the booking.
-    Looks for a confirmation or booking reference on success.
+    If you use a separate function for T&Cs, it’s here for backward compatibility.
+    Currently, we do T&Cs in process_booking.
     """
-    logger.info("Accepting terms and conditions...")
-
-    # Terms Checkbox
-    terms_checkbox = wait_for_element(driver, By.ID, "terms", timeout=5)
-    if not terms_checkbox:
-        logger.error("Could not find terms checkbox.")
-        return False
-
-    # Attempt to click the checkbox or label
-    max_attempts = 3
-    for attempt in range(max_attempts):
-        try:
-            driver.execute_script("arguments[0].scrollIntoView(true);", terms_checkbox)
-            time.sleep(1)
-            # Try clicking the label
-            terms_label = None
-            try:
-                terms_label = driver.find_element(By.XPATH, "//label[@for='terms']")
-            except:
-                pass
-
-            if terms_label:
-                driver.execute_script("arguments[0].click();", terms_label)
-                logger.info("Clicked terms and conditions label.")
-            else:
-                driver.execute_script("arguments[0].click();", terms_checkbox)
-                logger.info("Clicked terms and conditions checkbox directly.")
-
-            time.sleep(1)
-            if terms_checkbox.is_selected():
-                logger.info("Terms and conditions accepted.")
-                break
-            else:
-                logger.warning("Checkbox not selected, retrying...")
-                time.sleep(1)
-        except Exception as e:
-            logger.warning(f"Attempt {attempt+1}: Error clicking terms checkbox: {str(e)}")
-            time.sleep(1)
-        if attempt == max_attempts - 1 and not terms_checkbox.is_selected():
-            logger.error("Failed to check terms and conditions checkbox after multiple attempts.")
-            return False
-
-    # Click "Book and Pay" or finalize button
-    book_pay_button = wait_for_element(driver, By.ID, "PaymentFormSubmit", timeout=5, clickable=True)
-    if book_pay_button:
-        try:
-            driver.execute_script("arguments[0].scrollIntoView(true);", book_pay_button)
-            time.sleep(1)
-            book_pay_button.click()
-            logger.info("Clicked Book and Pay button.")
-        except Exception as e:
-            logger.warning(f"Regular click failed, trying JS click: {str(e)}")
-            try:
-                driver.execute_script("arguments[0].click();", book_pay_button)
-            except Exception as ex:
-                logger.error(f"Failed to click Book and Pay button: {str(ex)}")
-                return False
-
-        # Wait for a confirmation page
-        try:
-            WebDriverWait(driver, 30).until(
-                EC.presence_of_element_located((By.XPATH, "//h1[contains(text(), 'Confirmation')]"))
-            )
-            # Extract booking reference
-            return extract_booking_reference(driver, user_details)
-        except TimeoutException:
-            logger.error("Booking confirmation not received (Timeout).")
-            return False
-    else:
-        logger.error("Could not find Book and Pay button.")
-        return False
-
+    logger.info("accept_terms_and_finalize is not used in process_booking now, but left for reference.")
+    return True
 
 def extract_booking_reference(driver, user_details):
     """
-    Searches for a booking reference in several possible places on the page.
-    Returns True if found, else False.
+    Searches for a booking reference on the confirmation page and writes it to booking_reference.txt.
     """
     logger.info("Looking for booking reference on the confirmation page...")
     possible_xpaths = [
@@ -494,7 +396,6 @@ def extract_booking_reference(driver, user_details):
         try:
             ref_el = driver.find_element(By.XPATH, xpath)
             if ref_el:
-                # Might be something like 'Booking Reference: ABC1234'
                 text_parts = ref_el.text.split("Reference:")
                 if len(text_parts) > 1:
                     booking_ref = text_parts[1].strip()
@@ -502,12 +403,8 @@ def extract_booking_reference(driver, user_details):
         except:
             continue
 
-
-
     if booking_ref:
-        logger.info(f"Booking confirmed! Reference number: {booking_ref}")
-        # Save booking reference to file
-        # with open("booking_reference.txt", "a") as f:
+        logger.info(f"Booking confirmed! Reference: {booking_ref}")
         with open("/Users/admin/pip_install/booking_reference.txt", "a") as f:
             f.write(f"Booking Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f" BOOKED FOR {user_details['first_name']}\n")
