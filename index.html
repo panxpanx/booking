@@ -1,308 +1,423 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Parking Version 2</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
-
-        h1 {
-            text-align: center;
-            color: #007bff;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        .form-container, .cronjob-container {
-            margin: 20px auto;
-            padding: 20px;
-            max-width: 500px;
-            background: #fff;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-
-        form label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        form input, form select, button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        form button {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        form button:hover {
-            background-color: #218838;
-        }
-
-        .user-list {
-            margin: 20px auto;
-            max-width: 800px;
-        }
-
-        .user {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .user span {
-            font-size: 14px;
-        }
-
-        .user strong {
-            font-size: 16px;
-            color: #000;
-        }
-
-        .user button {
-            padding: 10px 15px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-            color: white;
-            border: none;
-        }
-
-        .user .on {
-            background-color: #28a745;
-        }
-
-        .user .on:hover {
-            background-color: #218838;
-        }
-
-        .user .off {
-            background-color: #dc3545;
-        }
-
-        .user .off:hover {
-            background-color: #c82333;
-        }
-
-        .cronjob-container p {
-            font-size: 14px;
-            color: #555;
-            text-align: center;
-        }
-
-        .cronjob-container code {
-            display: block;
-            background: #f1f1f1;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            text-align: center;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Book Parking Version 2</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      color: #007bff;
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    .form-container,
+    .cronjob-container {
+      margin: 20px auto;
+      padding: 20px;
+      max-width: 500px;
+      background: #fff;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+      border-radius: 10px;
+    }
+    form label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #555;
+    }
+    form input,
+    form select,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    form button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    form button:hover {
+      background-color: #218838;
+    }
+    .user-list {
+      margin: 20px auto;
+      max-width: 800px;
+    }
+    .user {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      flex-wrap: wrap; /* so day toggles can wrap if needed */
+    }
+    .user span {
+      font-size: 14px;
+    }
+    .user strong {
+      font-size: 16px;
+      color: #000;
+    }
+    .user button {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 14px;
+      color: white;
+      border: none;
+      margin: 3px; /* slight spacing around buttons */
+    }
+    .user .on {
+      background-color: #28a745;
+    }
+    .user .on:hover {
+      background-color: #218838;
+    }
+    .user .off {
+      background-color: #dc3545;
+    }
+    .user .off:hover {
+      background-color: #c82333;
+    }
+    .cronjob-container p {
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+    }
+    .cronjob-container code {
+      display: block;
+      background: #f1f1f1;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <h1>Book Parking Version 2</h1>
-    <h2>Current Users</h2>
-    <div class="user-list" id="userList"></div>
+  <h1>Book Parking Version 2</h1>
 
-    <h2>Users Updated Today</h2>
-    <div class="user-list" id="userListToday"></div>
-    <button onclick="loadUsersToday()">Load Today's Users</button>
+  <!-- CURRENT USERS -->
+  <h2>Current Users</h2>
+  <div class="user-list" id="userList"></div>
 
-    <h2>Bookings Updated Today</h2>
-    <div class="user-list" id="bookingListToday"></div>
-    <button onclick="loadBookingsToday()">Load Today's Bookings</button>
+  <!-- USERS UPDATED TODAY -->
+  <h2>Users Updated Today</h2>
+  <button onclick="loadUsersToday()">Load Today's Users</button>
+  <div class="user-list" id="userListToday"></div>
 
-    <h2>View Today's Booking File</h2>
-    <div class="user-list" id="bookingFileList"></div>
-    <button onclick="viewTodayBookingFile()">View Today's Booking File</button>
+  <!-- BOOKINGS UPDATED TODAY -->
+  <h2>Bookings Updated Today</h2>
+  <button onclick="loadBookingsToday()">Load Today's Bookings</button>
+  <div class="user-list" id="bookingListToday"></div>
 
-    <h2>Update User Details</h2>
-    <div class="form-container">
-        <form id="updateForm">
-            <label>First Name: <input type="text" id="first_name" required></label>
-            <label>Last Name: <input type="text" id="last_name" required></label>
-            <label>Email: <input type="email" id="email" required></label>
-            <label>Vehicle Reg: <input type="text" id="vehicle_reg" required></label>
-            <label>Book: 
-                <select id="book">
-                    <option value="Y">Y</option>
-                    <option value="N">N</option>
-                </select>
-            </label>
-            <button type="submit">Add/Update User</button>
-        </form>
-    </div>
+  <!-- TODAY'S BOOKING ONLY -->
+  <h2>Today's Booking Only</h2>
+  <button onclick="viewTodayBookingFile()">View Today's Booking File</button>
+  <div class="user-list" id="bookingFileList"></div>
 
-    <h2>Your Cron Job</h2>
-    <div class="cronjob-container">
-        <p>This cron job runs every weekday at 6:00 AM to manage your parking bookings:</p>
-        <code>
-            0 6 * * 0,1,2,3,4 /Users/admin/pip_install/my_venv/bin/python /Users/admin/pip_install/main.py >> /Users/admin/pip_install/output.log 2>> /Users/admin/pip_install/error.log
-        </code>
-    </div>
+  <!-- LOAD ALL THE BOOKING -->
+  <h2>Load all the Booking</h2>
+  <button onclick="loadAllBookings()">Load All Bookings</button>
+  <div class="user-list" id="allBookingsList"></div>
 
-    <script>
-        // Load users and display them
-        function loadUsers() {
-            fetch('/get_users')
-                .then(response => response.json())
-                .then(data => {
-                    const userList = document.getElementById('userList');
-                    userList.innerHTML = ''; // Clear list before rendering
-                    data.forEach((user, index) => {
-                        const userDiv = document.createElement('div');
-                        userDiv.className = 'user';
-                        const buttonClass = user.Book === 'Y' ? 'on' : 'off';
-                        const buttonText = user.Book === 'Y' ? 'Book ON' : 'Book OFF';
+  <!-- UPDATE USER DETAILS -->
+  <h2>Update User Details</h2>
+  <div class="form-container">
+    <form id="updateForm">
+      <label>First Name:
+        <input type="text" id="first_name" required />
+      </label>
+      <label>Last Name:
+        <input type="text" id="last_name" required />
+      </label>
+      <label>Email:
+        <input type="email" id="email" required />
+      </label>
+      <label>Vehicle Reg:
+        <input type="text" id="vehicle_reg" required />
+      </label>
 
-                        userDiv.innerHTML = `
-                            <span><strong>${index + 1}. ${user.first_name} ${user.last_name}</strong> (${user.email}) - Vehicle: ${user.vehicle_reg}, Book: <strong>${user.Book}</strong></span>
-                            <button class="${buttonClass}" onclick="toggleBook('${user.email}', '${user.Book}')">${buttonText}</button>
-                        `;
-                        userList.appendChild(userDiv);
-                    });
-                })
-                .catch(error => console.error('Error fetching user details:', error));
-        }
+      <!-- Overall Book ON/OFF -->
+      <label>Book:
+        <select id="book">
+          <option value="Y">Y</option>
+          <option value="N">N</option>
+        </select>
+      </label>
 
-        // Toggle Book flag
-        function toggleBook(email, currentBook) {
-            const newBook = currentBook === 'Y' ? 'N' : 'Y';
-            fetch('/update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, Book: newBook }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    loadUsers(); // Reload users
-                })
-                .catch(error => console.error('Error toggling book:', error));
-        }
+      <!-- Days of the week checkboxes -->
+      <label><input type="checkbox" id="mon" /> Monday</label>
+      <label><input type="checkbox" id="tue" /> Tuesday</label>
+      <label><input type="checkbox" id="wed" /> Wednesday</label>
+      <label><input type="checkbox" id="thu" /> Thursday</label>
+      <label><input type="checkbox" id="fri" /> Friday</label>
+      <label><input type="checkbox" id="sat" /> Saturday</label>
+      <label><input type="checkbox" id="sun" /> Sunday</label>
 
-        // Load today's users
-        function loadUsersToday() {
-            fetch('/get_users_today')
-                .then(response => response.json())
-                .then(data => {
-                    const userListToday = document.getElementById('userListToday');
-                    userListToday.innerHTML = ''; // Clear list before rendering
-                    data.forEach((user, index) => {
-                        const userDiv = document.createElement('div');
-                        userDiv.className = 'user';
-                        userDiv.innerHTML = `
-                            <span><strong>${index + 1}. ${user.first_name} ${user.last_name}</strong> (${user.email}) - Vehicle: ${user.vehicle_reg}, Book: <strong>${user.Book}</strong></span>
-                        `;
-                        userListToday.appendChild(userDiv);
-                    });
-                })
-                .catch(error => console.error('Error fetching today\'s user details:', error));
-        }
+      <button type="submit">Add/Update User</button>
+    </form>
+  </div>
 
-        // Load today's bookings
-        function loadBookingsToday() {
-            fetch('/get_bookings_today')
-                .then(response => response.json())
-                .then(data => {
-                    const bookingList = document.getElementById('bookingListToday');
-                    bookingList.innerHTML = ''; // Clear list before rendering
-                    data.forEach((booking, index) => {
-                        const bookingDiv = document.createElement('div');
-                        bookingDiv.className = 'user';
-                        bookingDiv.innerHTML = `
-                            <span><strong>${index + 1}. Reference:</strong> ${booking.reference}</span><br>
-                            <span><strong>Date:</strong> ${booking.date}</span><br>
-                            <span><strong>Booked For:</strong> ${booking.name || "N/A"}</span>
-                        `;
-                        bookingList.appendChild(bookingDiv);
-                    });
-                })
-                .catch(error => console.error('Error fetching today\'s bookings:', error));
-        }
+  <!-- CRON JOB DETAILS -->
+  <h2>Your Cron Job</h2>
+  <div class="cronjob-container">
+    <p>This cron job runs every weekday at 6:00 AM to manage your parking bookings:</p>
+    <code>
+0 6 * * 0,1,2,3,4 /Users/admin/pip_install/my_venv/bin/python /Users/admin/pip_install/main.py >> /Users/admin/pip_install/output.log 2>> /Users/admin/pip_install/error.log
+    </code>
+  </div>
 
-        // View today's booking file
-        function viewTodayBookingFile() {
-            fetch('/view_today_booking_file')
-                .then(response => response.json())
-                .then(data => {
-                    const bookingFileList = document.getElementById('bookingFileList');
-                    bookingFileList.innerHTML = ''; // Clear previous content
-                    data.content.forEach((entry, index) => {
-                        const entryDiv = document.createElement('div');
-                        entryDiv.className = 'user';
-                        entryDiv.innerHTML = `
-                            <span><strong>${index + 1}. Booked For:</strong> ${entry.name}</span><br>
-                            <span><strong>Reference:</strong> ${entry.reference}</span><br>
-                            <span><strong>Date:</strong> ${entry.date}</span>
-                        `;
-                        bookingFileList.appendChild(entryDiv);
-                    });
-                })
-                .catch(error => console.error('Error viewing today\'s booking file:', error));
-        }
+  <script>
+    // We'll keep a global user array so we can toggle day-of-week for each user easily
+    let globalUsers = [];
 
-        // Handle form submission
-        document.getElementById('updateForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const userData = {
-                first_name: document.getElementById('first_name').value.trim(),
-                last_name: document.getElementById('last_name').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                vehicle_reg: document.getElementById('vehicle_reg').value.trim(),
-                Book: document.getElementById('book').value,
-            };
+    // Load all users on page load
+    document.addEventListener('DOMContentLoaded', loadUsers);
 
-            fetch('/update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(userData),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    document.getElementById('updateForm').reset();
-                    loadUsers(); // Reload users
-                })
-                .catch(error => console.error('Error updating user details:', error));
-        });
+    function loadUsers() {
+      fetch('/get_users')
+        .then(res => res.json())
+        .then(data => {
+          globalUsers = data;
+          renderUsers(data);
+        })
+        .catch(err => console.error('Error fetching user details:', err));
+    }
 
-        // Initial load
-        loadUsers();
-    </script>
+    // Render the 'Current Users' list, including day-of-week toggles
+    function renderUsers(users) {
+      const userList = document.getElementById('userList');
+      userList.innerHTML = '';
+
+      users.forEach((user, index) => {
+        // Day-of-week default if not present
+        const mon = user.mon || 'N';
+        const tue = user.tue || 'N';
+        const wed = user.wed || 'N';
+        const thu = user.thu || 'N';
+        const fri = user.fri || 'N';
+        const sat = user.sat || 'N';
+        const sun = user.sun || 'N';
+
+        // Build day buttons
+        const dayButtonsHtml = `
+          <button class="${mon === 'Y' ? 'on' : 'off'}" onclick="toggleDay(${index}, 'mon')">Mon: ${mon}</button>
+          <button class="${tue === 'Y' ? 'on' : 'off'}" onclick="toggleDay(${index}, 'tue')">Tue: ${tue}</button>
+          <button class="${wed === 'Y' ? 'on' : 'off'}" onclick="toggleDay(${index}, 'wed')">Wed: ${wed}</button>
+          <button class="${thu === 'Y' ? 'on' : 'off'}" onclick="toggleDay(${index}, 'thu')">Thu: ${thu}</button>
+          <button class="${fri === 'Y' ? 'on' : 'off'}" onclick="toggleDay(${index}, 'fri')">Fri: ${fri}</button>
+          <button class="${sat === 'Y' ? 'on' : 'off'}" onclick="toggleDay(${index}, 'sat')">sat: ${sat}</button>
+          <button class="${sun === 'Y' ? 'on' : 'off'}" onclick="toggleDay(${index}, 'sun')">sun: ${sun}</button>
+        `;
+
+        // Overall Book toggle
+        const buttonClass = user.Book === 'Y' ? 'on' : 'off';
+        const buttonText = user.Book === 'Y' ? 'Book ON' : 'Book OFF';
+
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user';
+        userDiv.innerHTML = `
+          <span>
+            <strong>${index + 1}. ${user.first_name} ${user.last_name}</strong>
+            (${user.email}) - Vehicle: ${user.vehicle_reg}, Book: <strong>${user.Book}</strong>
+          </span>
+          <div style="display:flex; flex-wrap:wrap; gap:4px;">
+            <button class="${buttonClass}" onclick="toggleBook(${index})">${buttonText}</button>
+            ${dayButtonsHtml}
+          </div>
+        `;
+        userList.appendChild(userDiv);
+      });
+    }
+
+    // Toggle overall Book ON/OFF
+    function toggleBook(index) {
+      const user = globalUsers[index];
+      const newBookVal = (user.Book === 'Y') ? 'N' : 'Y';
+      updateUserField(user.email, { Book: newBookVal });
+    }
+
+    // Toggle an individual day for a user
+    function toggleDay(index, dayName) {
+      const user = globalUsers[index];
+      const currentVal = user[dayName] || 'N';
+      const newVal = (currentVal === 'Y') ? 'N' : 'Y';
+      updateUserField(user.email, { [dayName]: newVal });
+    }
+
+    // Helper: partial update for a single user
+    function updateUserField(email, fieldObj) {
+      // Build a minimal request with the user’s email plus the updated field(s)
+      const data = { email };
+      // Merge in fieldObj (like {mon:'Y'} or {Book:'N'})
+      for (let key in fieldObj) {
+        data[key] = fieldObj[key];
+      }
+
+      fetch('/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+        .then(res => res.json())
+        .then(json => {
+          alert(json.message);
+          // Reload users from server
+          loadUsers();
+        })
+        .catch(err => console.error('Error updating user field:', err));
+    }
+
+    // Load today's users
+    function loadUsersToday() {
+      fetch('/get_users_today')
+        .then(res => res.json())
+        .then(data => {
+          const userListToday = document.getElementById('userListToday');
+          userListToday.innerHTML = '';
+          data.forEach((user, index) => {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user';
+            userDiv.innerHTML = `
+              <span>
+                <strong>${index + 1}. ${user.first_name} ${user.last_name}</strong>
+                (${user.email}) - Vehicle: ${user.vehicle_reg}, Book: <strong>${user.Book}</strong>
+              </span>
+            `;
+            userListToday.appendChild(userDiv);
+          });
+        })
+        .catch(err => console.error('Error fetching users updated today:', err));
+    }
+
+    // Load today's bookings
+    function loadBookingsToday() {
+      fetch('/get_bookings_today')
+        .then(res => res.json())
+        .then(data => {
+          const bookingList = document.getElementById('bookingListToday');
+          bookingList.innerHTML = '';
+          data.forEach((booking, index) => {
+            const bookingDiv = document.createElement('div');
+            bookingDiv.className = 'user';
+            bookingDiv.innerHTML = `
+              <span><strong>${index + 1}. Reference:</strong> ${booking.reference}</span><br>
+              <span><strong>Date:</strong> ${booking.date}</span><br>
+              <span><strong>Booked For:</strong> ${booking.name || 'N/A'}</span>
+            `;
+            bookingList.appendChild(bookingDiv);
+          });
+        })
+        .catch(err => console.error('Error fetching today\'s bookings:', err));
+    }
+
+    // View today's booking file
+    function viewTodayBookingFile() {
+      fetch('/view_today_booking_file')
+        .then(res => res.json())
+        .then(data => {
+          const bookingFileList = document.getElementById('bookingFileList');
+          bookingFileList.innerHTML = '';
+          data.content.forEach((entry, index) => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'user';
+            entryDiv.innerHTML = `
+              <span><strong>${index + 1}. Booked For:</strong> ${entry.name}</span><br>
+              <span><strong>Reference:</strong> ${entry.reference}</span><br>
+              <span><strong>Date:</strong> ${entry.date}</span>
+            `;
+            bookingFileList.appendChild(entryDiv);
+          });
+        })
+        .catch(err => console.error('Error viewing today\'s booking file:', err));
+    }
+
+    // Load all bookings
+    function loadAllBookings() {
+      fetch('/get_all_bookings')
+        .then(res => res.json())
+        .then(data => {
+          const allBookingsList = document.getElementById('allBookingsList');
+          allBookingsList.innerHTML = '';
+          data.forEach((entry, index) => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'user';
+            entryDiv.innerHTML = `
+              <span><strong>${index + 1}. Reference:</strong> ${entry.reference}</span><br>
+              <span><strong>Date:</strong> ${entry.date}</span><br>
+              <span><strong>Booked For:</strong> ${entry.name || 'N/A'}</span>
+            `;
+            allBookingsList.appendChild(entryDiv);
+          });
+        })
+        .catch(err => console.error('Error loading all bookings:', err));
+    }
+
+    // Handle the "Update User Details" form
+    document.getElementById('updateForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Get day-of-week from checkboxes
+      const monVal = document.getElementById('mon').checked ? 'Y' : 'N';
+      const tueVal = document.getElementById('tue').checked ? 'Y' : 'N';
+      const wedVal = document.getElementById('wed').checked ? 'Y' : 'N';
+      const thuVal = document.getElementById('thu').checked ? 'Y' : 'N';
+      const friVal = document.getElementById('fri').checked ? 'Y' : 'N';
+      const satVal = document.getElementById('sat').checked ? 'Y' : 'N';
+      const sunVal = document.getElementById('sun').checked ? 'Y' : 'N';
+
+      const userData = {
+        first_name: document.getElementById('first_name').value.trim(),
+        last_name: document.getElementById('last_name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        vehicle_reg: document.getElementById('vehicle_reg').value.trim(),
+        Book: document.getElementById('book').value,
+        mon: monVal,
+        tue: tueVal,
+        wed: wedVal,
+        thu: thuVal,
+        fri: friVal,
+	sat: satVal,
+	sun: sunVal,
+      };
+
+      fetch('/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message);
+          // Reset form
+          document.getElementById('updateForm').reset();
+          // Reload the user list
+          loadUsers();
+        })
+        .catch(err => console.error('Error updating user details:', err));
+    });
+  </script>
 </body>
 </html>
 
